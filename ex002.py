@@ -26,10 +26,10 @@ def node_c(state: State) -> State:
     return output_state
 
 # Criando a condicional
-def the_conditional(state: State) -> Literal["B", "C"]:
+def the_conditional(state: State) -> Literal["goes_to_b", "goes_to_c"]:
     if state.current_number >= 50:
-        return "B"
-    return "C"
+        return "goes_to_b"
+    return "goes_to_c"
 
 # Definir o builder do grafo
 builder = StateGraph(State)
@@ -41,7 +41,10 @@ builder.add_node("C", node_c)
 
 # Definir as arestas/edges
 builder.add_edge(START, "A")
-builder.add_conditional_edges("A", the_conditional, ["B", "C"])
+builder.add_conditional_edges("A", the_conditional, {
+    "goes_to_b": "B", 
+    "goes_to_c": "C"
+    })
 builder.add_edge("B", END)
 builder.add_edge("C", END)
 
