@@ -1,19 +1,21 @@
-from langgraph.graph import StateGraph
-from typing import Annotated, TypedDict
+from dataclasses import dataclass
+from langgraph.graph import END, START, StateGraph
+from typing import Annotated
 import operator
 
 # Criando o estado
-class State(TypedDict):
+@dataclass
+class State:
     nodes_path: Annotated[list[str], operator.add]
 
 # Criando os nodes
 def node_a(state: State) -> State:
-    output_state: State = { "nodes_path": ["A"] }
+    output_state: State = State(nodes_path=["A"])
     print("> node_a", f"{state=}", f"{output_state=}")
     return output_state
 
 def node_b(state: State) -> State:
-    output_state: State = { "nodes_path": ["B"] }
+    output_state: State = State(nodes_path=["B"])
     print("> node_b", f"{state=}", f"{output_state=}")
     return output_state
 
@@ -25,15 +27,15 @@ builder.add_node("A", node_a)
 builder.add_node("B", node_b)
 
 # Definir as arestas/edges
-builder.add_edge("__start__", "A")
+builder.add_edge(START, "A")
 builder.add_edge("A", "B")
-builder.add_edge("B", "__end__")
+builder.add_edge("B", END)
 
 # Compilar o grafo
 graph = builder.compile()
 
 # Pegar o resultado
-response = graph.invoke({ "nodes_path": [] })
+response = graph.invoke(State(nodes_path = []))
 
 # Imprimir resultado
 print()
