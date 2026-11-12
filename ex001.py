@@ -1,9 +1,10 @@
 from langgraph.graph import StateGraph
 from typing import Annotated, TypedDict
+import operator
 
 # Criando o estado
 class State(TypedDict):
-    nodes_path: Annotated[list[str], lambda a, b: a + b]
+    nodes_path: Annotated[list[str], operator.add]
 
 # Criando os nodes
 def node_a(state: State) -> State:
@@ -36,5 +37,5 @@ response = graph.invoke({ "nodes_path": [] })
 
 # Imprimir resultado
 print()
-print(response)
+print(f"{response=}")
 print()
