@@ -1,13 +1,9 @@
 from langgraph.graph import StateGraph
 from typing import Annotated, TypedDict
 
-# Função reducer - concatena duas lista
-def reducer(a: list[str], b: list[str]) -> list[str]:
-    return a + b
-
 # Criando o estado
 class State(TypedDict):
-    nodes_path: Annotated[list[str], reducer]
+    nodes_path: Annotated[list[str], lambda a, b: a + b]
 
 # Criando os nodes
 def node_a(state: State) -> State:
