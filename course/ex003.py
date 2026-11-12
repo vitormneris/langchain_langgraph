@@ -1,9 +1,12 @@
+import threading
 from typing import Annotated, Sequence, TypedDict
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain.chat_models import init_chat_model
 from langgraph.graph import END, START, StateGraph, add_messages
+from langgraph.checkpoint.memory import InMemorySaver
 
+from langgraph.graph.state import RunnableConfig
 from rich import print
 from rich.markdown import Markdown
 
@@ -30,11 +33,14 @@ builder.add_node("call_llm", call_llm)
 builder.add_edge(START, "call_llm")
 builder.add_edge("call_llm", END)
 
-graph = builder.compile()
+# Criando o histórico de mensagens
+checkpointer = InMemorySaver()
+config = RunnableConfig(configurable={"thread_id": threading.get_ident()})
 
-if __name__ == "__main__":
-    current_messages: Sequence[BaseMessage] = []
-    
+# Criando o Grafo
+graph = builder.compile(checkpointer=checkpointer)
+
+if __name__ == "__main__":    
     while True:
         user_input = input("Insira a mensagem (q para sair): ")
         print(Markdown("---"))
@@ -44,9 +50,7 @@ if __name__ == "__main__":
             break
         
         human_message = HumanMessage(user_input)
-        current_messages = [*current_messages, human_message]
-        response = graph.invoke( { "messages": current_messages } )
-        current_messages = response["messages"]
-        print(f"AI: {current_messages[-1].content}")
+        response = graph.invoke( { "messages": [human_message] }, config=config )
+        print(f"AI: {response["messages"][-1].content}")
         print(Markdown("---"))
 
