@@ -5,6 +5,7 @@ from langchain.chat_models import init_chat_model
 from langgraph.graph import END, START, StateGraph, add_messages
 
 from rich import print
+from rich.markdown import Markdown
 
 llm = init_chat_model("ollama:llama3.2:3b")
 
@@ -14,8 +15,8 @@ class AgentState(TypedDict):
 
 # Criando os nodes
 def call_llm(state: AgentState) -> AgentState:
-    result_llm = llm.invoke(state['messages'])
-    return { 'messages': [result_llm] }
+    result_llm = llm.invoke(state["messages"])
+    return { "messages": [result_llm] }
 
 # Criando o builder
 builder = StateGraph(
@@ -31,11 +32,21 @@ builder.add_edge("call_llm", END)
 
 graph = builder.compile()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+    current_messages: Sequence[BaseMessage] = []
+    
     while True:
         user_input = input("Insira a mensagem (q para sair): ")
-        if user_input in ['q', 'quit']:
+        print(Markdown("---"))
+        if user_input.lower() in ["q", "quit"]:
+            print(Markdown("Bye!"))
+            print(Markdown("---"))
             break
+        
         human_message = HumanMessage(user_input)
-        response = graph.invoke( { 'messages': [ human_message ] } )
-        print(f'AI: {response['messages'][-1].content}')
+        current_messages = [*current_messages, human_message]
+        response = graph.invoke( { "messages": current_messages } )
+        current_messages = response["messages"]
+        print(f"AI: {current_messages[-1].content}")
+        print(Markdown("---"))
+
